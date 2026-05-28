@@ -1,11 +1,10 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
-#include <Random.h>
 #include <string>
-#include <algorithm>
+#include "utility/Random.h"
 
-constexpr int horse_count { 6 };
+constexpr auto horse_count { 6 };
 constexpr std::string_view colours [horse_count] = {
 	"\033[38;5;9m",
 	"\033[38;5;10m",
@@ -14,8 +13,6 @@ constexpr std::string_view colours [horse_count] = {
 	"\033[38;5;13m",
 	"\033[38;5;14m"
 };
-
-constexpr std::string_view background = { "\033[38;5;0m" };
 
 constexpr int track_length_meters { 100 };
 constexpr std::string_view horsey { "h" };
@@ -45,7 +42,6 @@ int pickHorseToMove()
 void initTrack()
 {
 	moveCursorTo(1, 1);
-	std::cout << background;
 	std::cout << "\n";
 
 	for( int i { 0 }; i < horse_count; ++i )
@@ -59,16 +55,24 @@ void initTrack()
 	
 }
 
-int horseInTheLead(const int positions [horse_count] )
+template <typename T>
+T horseInTheLead(const T positions [horse_count] )
 {
-	//return *std::max_element( positions, positions + sizeof (positions[0]) );
-	int max_index = 0;
+	auto max_index  { 0 };
+	auto max_position { 0 };
+	bool tie { false };
 	for ( int i { 1 }; i < horse_count; ++i )
 	{
-		if (positions[i] > positions[max_index])
+		if (positions[i] == max_position)
+			tie = true;
+		else if (positions[i] > positions[max_index]) {
 			max_index = i;
+			tie = false;
+			max_position = positions[max_index];
+		}
+
 	}
-	return max_index;
+	return tie ? -1 : max_index;
 
 }
 
@@ -76,15 +80,21 @@ int horseInTheLead(const int positions [horse_count] )
 void updateTrack(const int positions [horse_count], const int moving_horse)
 {
 	const int in_the_lead = horseInTheLead(positions);
-	
-	if ( ( moving_horse != in_the_lead && positions[moving_horse] >= positions[in_the_lead] ) || positions[in_the_lead] == 1 || positions[in_the_lead] >= 100 )
-	{
+
+	if ( in_the_lead == -1 ) {
 		clearRowText(1);
+	}
+	else if ( positions[moving_horse] >= positions[in_the_lead] )
+	{
 		std::cout << colours[in_the_lead];
-		positions[in_the_lead] >= 100 ?
-			std::cout << "Horse " << in_the_lead + 1<< " has won the race!" :
-			std::cout << "Horse " << in_the_lead + 1<< " is in the lead!";
-		
+		clearRowText(1);
+		std::cout << "Horse " << in_the_lead + 1<< " is in the lead!";
+	}
+	if ( positions[in_the_lead] >= 100) {
+		std::cout << colours[in_the_lead];
+		clearRowText(1);
+		std::cout << "Horse " << in_the_lead + 1<< " has won the race!";
+		return;
 	}
 	
 	std::cout << colours[moving_horse];
