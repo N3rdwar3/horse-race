@@ -76,10 +76,11 @@ T horseInTheLead(const T positions [horse_count] )
 
 }
 
+const char* horseInTheLead(const char* positions [horse_count] ) = delete;
 
 void updateTrack(const int positions [horse_count], const int moving_horse)
 {
-	const int in_the_lead = horseInTheLead(positions);
+	const int in_the_lead = horseInTheLead<int>(positions);
 
 	if ( in_the_lead == -1 ) {
 		clearRowText(1);
@@ -127,11 +128,8 @@ int main()
 		{
 			race_over = true;
 		}
-		else 
-		{
-			++positions[moving_horse];
-			updateTrack(positions, moving_horse);
-		}
+		++positions[moving_horse];
+		updateTrack(positions, moving_horse);
 		std::this_thread::sleep_for(std::chrono::milliseconds(25));
 	}
 	moveCursorTo(horse_count + 2, 1);
