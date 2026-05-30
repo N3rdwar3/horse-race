@@ -59,20 +59,13 @@ template <typename T>
 T horseInTheLead(const T positions [horse_count] )
 {
 	auto max_index  { 0 };
-	auto max_position { 0 };
-	bool tie { false };
 	for ( int i { 1 }; i < horse_count; ++i )
 	{
-		if (positions[i] == max_position)
-			tie = true;
-		else if (positions[i] > positions[max_index]) {
+		if (positions[i] > positions[max_index]) {
 			max_index = i;
-			tie = false;
-			max_position = positions[max_index];
 		}
-
 	}
-	return tie ? -1 : max_index;
+	return max_index;
 
 }
 
@@ -82,8 +75,10 @@ void updateTrack(const int positions [horse_count], const int moving_horse)
 {
 	const int in_the_lead = horseInTheLead<int>(positions);
 
-	if ( in_the_lead == -1 ) {
+	if ( positions[in_the_lead] == 0 ) {
+		std::cout << colours[moving_horse];
 		clearRowText(1);
+		std::cout << "Horse " << moving_horse + 1<< " is in the lead!";
 	}
 	else if ( positions[moving_horse] >= positions[in_the_lead] )
 	{
@@ -95,7 +90,6 @@ void updateTrack(const int positions [horse_count], const int moving_horse)
 		std::cout << colours[in_the_lead];
 		clearRowText(1);
 		std::cout << "Horse " << in_the_lead + 1<< " has won the race!";
-		return;
 	}
 	
 	std::cout << colours[moving_horse];
@@ -123,12 +117,11 @@ int main()
 	while(! race_over)
 	{
 		int moving_horse = pickHorseToMove();
-		// ensure this race aint over yet!
-		if ( positions[moving_horse] >= 100)
+		++positions[moving_horse];
+		if ( positions[moving_horse] >=100)
 		{
 			race_over = true;
 		}
-		++positions[moving_horse];
 		updateTrack(positions, moving_horse);
 		std::this_thread::sleep_for(std::chrono::milliseconds(25));
 	}
